@@ -2,7 +2,7 @@ import os
 import re
 from huggingface_hub import HfApi
 import requests
-import datetime
+from datetime import datetime, timezone, timedelta
 
 HF_TOKEN = os.getenv("HF_TOKEN") # will be injected by kubernetes secret
 if not HF_TOKEN:
@@ -29,7 +29,7 @@ def get_updated_page_content(old_page: str, new_page_count: int):
                       old_page)
     
     # update the last updated time <!-- geulgyeol-read-time-start -->KST 2025-11-29 1:00:30<!-- geulgyeol-read-time-end -->
-    now_kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    now_kst = datetime.now(timezone.utc) + timedelta(hours=9)
     formatted_time = now_kst.strftime("KST %Y-%m-%d %H:%M:%S")
     new_page = re.sub(r"(<!-- geulgyeol-read-time-start -->)(.*?)(<!-- geulgyeol-read-time-end -->)",
                       lambda m: m.group(1) + formatted_time + m.group(3),
