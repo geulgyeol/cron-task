@@ -24,7 +24,7 @@ def get_updated_page_content(old_page: str, new_page_count: int):
 
     pretty_number = f"{new_page_count:,}"
     new_page = re.sub(r"(<!-- geulgyeol-read-end -->)([0-9,]+)(<!-- geulgyeol-read-end -->)",
-                        fr"\1{pretty_number}\3",
+                        r"\1" + pretty_number + r"\3",
                       old_page)
     
     return new_page
