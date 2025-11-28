@@ -2,6 +2,7 @@ import os
 import re
 from huggingface_hub import HfApi
 import requests
+import datetime
 
 HF_TOKEN = os.getenv("HF_TOKEN") # will be injected by kubernetes secret
 if not HF_TOKEN:
@@ -19,13 +20,20 @@ def fetch_files_data():
     return response.json()
 
 def get_updated_page_content(old_page: str, new_page_count: int):
-    # find <!-- geulgyeol-read-end -->0<!-- geulgyeol-read-end --> then update the page count, keeping the same format
+    # find <!-- geulgyeol-read-start -->0<!-- geulgyeol-read-end --> then update the page count, keeping the same format
     # use regex to find and replace
 
     pretty_number = f"{new_page_count:,}"
-    new_page = re.sub(r"(<!-- geulgyeol-read-end -->)([0-9,]+)(<!-- geulgyeol-read-end -->)",
+    new_page = re.sub(r"(<!-- geulgyeol-read-start -->)([0-9,]+)(<!-- geulgyeol-read-end -->)",
                       lambda m: m.group(1) + pretty_number + m.group(3),
                       old_page)
+    
+    # update the last updated time <!-- geulgyeol-read-time-start -->KST 2025-11-29 1:00:30<!-- geulgyeol-read-time-end -->
+    now_kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    formatted_time = now_kst.strftime("KST %Y-%m-%d %H:%M:%S")
+    new_page = re.sub(r"(<!-- geulgyeol-read-time-start -->)(.*?)(<!-- geulgyeol-read-time-end -->)",
+                      lambda m: m.group(1) + formatted_time + m.group(3),
+                      new_page)
     
     return new_page
 
