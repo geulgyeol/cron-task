@@ -10,6 +10,7 @@ if not HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable is not set.")
 HTML_STORAGE_PATH: str = "html-storage.default.svc.cluster.local"
 SPACE_NAME = "geulgyeol/README"
+MAX_RETRIES = 5
 
 hf_api = HfApi(token=HF_TOKEN)
 
@@ -24,11 +25,11 @@ def fetch_files_data():
             response.raise_for_status()
             return response.json()
         except requests.RequestException as exc:
-            if attempt > max_retries:
+            if attempt > MAX_RETRIES:
                 raise exc
             
             print(
-                f"[fetch_files_data] attempt {attempt}/{max_retries} failed: {exc}. "
+                f"[fetch_files_data] attempt {attempt}/{MAX_RETRIES} failed: {exc}. "
                 f"Retrying in {interval_seconds} seconds..."
             )
             time.sleep(interval_seconds)
