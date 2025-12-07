@@ -2,6 +2,7 @@ import os
 import re
 from huggingface_hub import HfApi
 import requests
+import time
 from datetime import datetime, timezone, timedelta
 
 HF_TOKEN = os.getenv("HF_TOKEN") # will be injected by kubernetes secret
@@ -14,8 +15,23 @@ hf_api = HfApi(token=HF_TOKEN)
 
 def fetch_files_data():
     url = f"http://{HTML_STORAGE_PATH}/files"
-    response = requests.get(url)
-    response.raise_for_status()
+    attempt = 0
+    
+    while True:
+        try:
+            attempt += 1
+            response = requests.get(url, timeout=60)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            if attempt > max_retries:
+                raise exc
+            
+            print(
+                f"[fetch_files_data] attempt {attempt}/{max_retries} failed: {exc}. "
+                f"Retrying in {interval_seconds} seconds..."
+            )
+            time.sleep(interval_seconds)
 
     return response.json()
 
