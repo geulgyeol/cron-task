@@ -11,6 +11,7 @@ if not HF_TOKEN:
 HTML_STORAGE_PATH: str = "html-storage.default.svc.cluster.local"
 SPACE_NAME = "geulgyeol/README"
 MAX_RETRIES = 5
+INTERVAL_SECONDS = 60 * 5
 
 hf_api = HfApi(token=HF_TOKEN)
 
@@ -30,9 +31,9 @@ def fetch_files_data():
             
             print(
                 f"[fetch_files_data] attempt {attempt}/{MAX_RETRIES} failed: {exc}. "
-                f"Retrying in {interval_seconds} seconds..."
+                f"Retrying in {INTERVAL_SECONDS} seconds..."
             )
-            time.sleep(interval_seconds)
+            time.sleep(INTERVAL_SECONDS)
 
     return response.json()
 
